@@ -15,11 +15,11 @@ RegisteredUntil datetime2
 )
 
 INSERT INTO Vehicles VALUES
-('Ford', 'Focus', 'DA-5846-L', 'Red', 'Hatchback', 'Car', 54280.3, '2021-01-13 00:00'),
-('Ford', 'Focus', 'DA-3254-L', 'Black', 'Hatchback', 'Car', 33265.8, '2021-01-13 00:00'),
-('Ford', 'Focus', 'DA-1350-L', 'White', 'Hatchback', 'Car', 96312.1, '2021-01-13 00:00'),
-('Ford', 'Focus', 'DA-7843-L', 'Orange', 'Hatchback', 'Car', 104020.4, '2021-01-13 00:00'),
-('Ford', 'Focus', 'DA-2215-L', 'Teal', 'Hatchback', 'Car', 74365.0, '2021-01-13 00:00'),
+('Ford', 'Focus', 'DA-5846-L', 'Red', 'Hatchback', 'Car', 54280.3, '2020-12-13 00:00'),
+('Ford', 'Focus', 'DA-3254-L', 'Black', 'Hatchback', 'Car', 33265.8, '2020-12-13 00:00'),
+('Ford', 'Focus', 'DA-1350-L', 'White', 'Hatchback', 'Car', 96312.1, '2020-12-13 00:00'),
+('Ford', 'Focus', 'DA-7843-L', 'Orange', 'Hatchback', 'Car', 104020.4, '2020-12-13 00:00'),
+('Ford', 'Focus', 'DA-2215-L', 'Teal', 'Hatchback', 'Car', 74365.0, '2020-12-13 00:00'),
 ('Mercedes', 'C 200D', 'DA-213-PD', 'Cream', 'Sedan', 'Car', 50220.4, '2021-09-16 00:00'),
 ('Mercedes', 'C 200D', 'DA-460-PD', 'White', 'Sedan', 'Car', 76548.3, '2021-09-16 00:00'),
 ('Mercedes', 'C 200D', 'DA-238-PD', 'Black', 'Sedan', 'Car', 123486.4, '2021-09-16 00:00'),
@@ -44,11 +44,11 @@ DateRegistered datetime2 NOT NULL
 )
 
 INSERT INTO Registrations VALUES
-(1,'2020-01-13'),
-(2,'2020-01-13'),
-(3,'2020-01-13'),
-(4,'2020-01-13'),
-(5,'2020-01-13'),
+(1,'2019-12-13'),
+(2,'2019-12-13'),
+(3,'2019-12-13'),
+(4,'2019-12-13'),
+(5,'2019-12-13'),
 (6,'2020-09-16'),
 (7,'2020-09-16'),
 (8,'2020-09-16'),
@@ -112,6 +112,7 @@ EmployeeId int FOREIGN KEY REFERENCES Employees(Id) NOT NULL
 )
 
 INSERT INTO Sales VALUES
+('Magnus', 'Guevara', '12457965324', '1995-09-15 00:00', '754631258', '4848579562145685', '1', '2019-09-03 00:00', '2019-09-20 00:00', 1),
 ('Magnus', 'Guevara', '12457965324', '1995-09-15 00:00', '754631258', '4848579562145685', '1', '2020-09-03 00:00', '2020-09-20 00:00', 1),
 ('Jevan', 'Ventura', '34758612446', '1968-05-18 00:00', '625483125', '3325647895964251', '2', '2020-10-15 00:00', '2020-11-15 00:00', 2),
 ('Freya', 'Whitaker', '31244668259', '1954-12-23 00:00', '625978460', '3325679845124678', '3', '2020-11-23 00:00', '2020-11-30 00:00', 3),
@@ -134,9 +135,61 @@ INSERT INTO Sales VALUES
 ('Glenn', 'Curtis', '36659780412', '1999-09-26 00:00', '320245670', '3325648795124573', '20', '2020-07-02 00:00', '2020-07-08 00:00', 5)
 
 
+--Dohvatiti sva vozila kojima je istekla registracija
+
+SELECT Id, Make, Model, LicencePlate, RegisteredUntil FROM Vehicles WHERE RegisteredUntil<GETDATE()
+
+--Dohvatiti sva vozila kojima registracija ističe unutar idućih mjesec dana
+
+SELECT * FROM Vehicles v WHERE DATEDIFF(day, GETDATE(), v.RegisteredUntil)<30
+
+--Dohvatiti koliko vozila postoji po vrsti
+
+SELECT v.VehicleType AS VehicleType, COUNT(*) AS VehicleCount FROM Vehicles v
+GROUP BY VehicleType
+
+--Dohvatiti zadnjih 5 najmova koje je ostvario neki zaposlenik
+
+SELECT TOP 5 * FROM Sales s
+JOIN Employees e ON s.EmployeeId = e.Id
+WHERE e.FirstName = 'Ante' AND e.LastName = 'Antić'
+ORDER BY RentedOn DESC
+
+--Izračunati ukupnu cijenu najma za određeni najam (hint: pripaziti na najmove koji imaju miješanu zimsku i ljetnu tarifu tijekom trajanja)
 
 
 
+--Dohvatiti sve kupce najmova ikad, s tim da se ne ponavljaju u rezultatima
+
+SELECT DISTINCT Oib, FirstName, LastName, DateOfBirth, LicenceNumber FROM Sales
+
+--Dohvatiti za svakog zaposlenika timestamp zadnjeg najma kojeg je ostvario
+
+SELECT TOP 1 RentedOn FROM Sales s
+JOIN Employees e on e.Id = s.EmployeeId
+WHERE e.FirstName = 'Ante' AND e.LastName = 'Antić'
+ORDER BY s.RentedOn DESC
+
+--Dohvatiti broj vozila svake marke koji rent-a-car ima
+
+SELECT Count(*) AS VehicleCount, v.Make FROM Vehicles v
+GROUP BY v.Make
+
+--Arhivirati sve najmove koji su završili u novu tablicu. Osim već postojećih podataka u najmu, arhivirana tablica će sadržavati i podatak koliko je taj najam koštao.
 
 
 
+--Pobrojati koliko je najmova bilo po mjesecu, u svakom mjesecu 2020. godine.
+
+
+
+--Za sva vozila određene vrste, osim informaciju o vozilu, ispisati tekstualnu informaciju treba li registrirati vozilo unutar idućih mjesec dana (‘Treba registraciju’, ‘Ne treba registraciju’)
+
+
+
+--Dohvatiti broj najmova po vrsti vozila čija duljina najma (razdoblje) prelazi prosječnu duljinu najma
+
+SELECT v.VehicleType, COUNT(*) AS SalesCount FROM Sales s
+JOIN Vehicles v ON s.VehicleId = v.Id
+WHERE DATEDIFF(day, s.RentedOn, s.RentedUntil)>(SELECT AVG(CAST(DATEDIFF(day, s.RentedOn, RentedUntil) AS float)) FROM Sales s)
+GROUP BY v.VehicleType
