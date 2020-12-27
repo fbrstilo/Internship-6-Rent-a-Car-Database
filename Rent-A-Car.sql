@@ -157,6 +157,20 @@ ORDER BY RentedOn DESC
 
 --Izračunati ukupnu cijenu najma za određeni najam (hint: pripaziti na najmove koji imaju miješanu zimsku i ljetnu tarifu tijekom trajanja)
 
+DECLARE @Finished bit
+SET @Finished = 0
+DECLARE @DateCheck datetime2
+DECLARE @PriceSum decimal(6,2)
+SET @PriceSum = 0
+WHILE @Finished = 0
+BEGIN
+SELECT @DateCheck = s.RentedOn FROM Sales s WHERE s.Id = 1
+
+IF ((MONTH(@DateCheck)>=3 AND MONTH(@DateCheck)<10) OR (MONTH(@DateCheck) = 10 AND DAY(@DateCheck) = 1)
+	BEGIN
+	@PriceSum = @PriceSum + (SELECT p.PriceHalfDay FROM Prices p WHERE TimeOfYear = 'Summer' AND VehicleType = )
+	END
+END
 
 
 --Dohvatiti sve kupce najmova ikad, s tim da se ne ponavljaju u rezultatima
@@ -181,7 +195,9 @@ GROUP BY v.Make
 
 --Pobrojati koliko je najmova bilo po mjesecu, u svakom mjesecu 2020. godine.
 
-
+SELECT MONTH(RentedOn) AS [Month], COUNT(*) AS NumberOfSales FROM Sales
+WHERE YEAR(RentedOn) = 2020
+GROUP BY MONTH(RentedOn)
 
 --Za sva vozila određene vrste, osim informaciju o vozilu, ispisati tekstualnu informaciju treba li registrirati vozilo unutar idućih mjesec dana (‘Treba registraciju’, ‘Ne treba registraciju’)
 
