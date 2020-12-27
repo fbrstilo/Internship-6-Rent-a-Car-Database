@@ -190,7 +190,18 @@ GROUP BY v.Make
 
 --Arhivirati sve najmove koji su završili u novu tablicu. Osim već postojećih podataka u najmu, arhivirana tablica će sadržavati i podatak koliko je taj najam koštao.
 
-SELECT INTO
+SELECT s.*
+INTO FinishedSales FROM Sales s WHERE RentedUntil < GETDATE()
+SELECT s.Id,
+CASE
+	WHEN MONTH(fs.RentedOn) >= 3  AND MONTH(fs.RentedOn) <= 9 
+	THEN CAST(DATEDIFF(DAY,fs.RentedOn, fs.RentedUntil) AS float) * 2 * (SELECT PriceHalfDay FROM Prices p WHERE p.VehicleType = v.VehicleType AND TimeOfYear = 'Summer')
+	ELSE CAST(DATEDIFF(DAY,fs.RentedOn, fs.RentedUntil) AS float) * 2 * (SELECT PriceHalfDay FROM Prices p WHERE p.VehicleType = v.VehicleType AND TimeOfYear = 'Winter')
+END AS Cost
+FROM FinishedSales fs
+JOIN Vehicles v ON v.Id = fs.VehicleId
+JOIN Sales s on s.Id = fs.Id
+
 
 --Pobrojati koliko je najmova bilo po mjesecu, u svakom mjesecu 2020. godine.
 
