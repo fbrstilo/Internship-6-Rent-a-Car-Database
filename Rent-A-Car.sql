@@ -156,21 +156,20 @@ WHERE e.FirstName = 'Ante' AND e.LastName = 'Antić'
 ORDER BY RentedOn DESC
 
 --Izračunati ukupnu cijenu najma za određeni najam (hint: pripaziti na najmove koji imaju miješanu zimsku i ljetnu tarifu tijekom trajanja)
+--Zbog ovog zadatka sam sat vremena kasnije predao domaci rad. To je u potpunosti moja krivica jer sam prekasno zapoceo raditi domaci rad, i stvarno nisam znao sloziti sintaksu rjesenja.
+--Znam da je ovo rjesenje krivo jer ne pokriva dosta slucajeva.
+--Moja ideja za rjesenje koje nisam uspio napisati bila je da se napravi while loop koji broji vrijeme koliko je vozilo iznajmljeno, te za svakih 12 sati izmedu
+--RentedOn i RentedUntil izracuna tarifnu cjenu i doda to na sumu
 
-DECLARE @Finished bit
-SET @Finished = 0
-DECLARE @DateCheck datetime2
-DECLARE @PriceSum decimal(6,2)
-SET @PriceSum = 0
-WHILE @Finished = 0
-BEGIN
-SELECT @DateCheck = s.RentedOn FROM Sales s WHERE s.Id = 1
 
-IF ((MONTH(@DateCheck)>=3 AND MONTH(@DateCheck)<10) OR (MONTH(@DateCheck) = 10 AND DAY(@DateCheck) = 1)
-	BEGIN
-	@PriceSum = @PriceSum + (SELECT p.PriceHalfDay FROM Prices p WHERE TimeOfYear = 'Summer' AND VehicleType = )
-	END
-END
+SELECT s.Id,
+CASE
+	WHEN MONTH(RentedOn) >= 3  AND MONTH(RentedOn) <= 9 
+	THEN CAST(DATEDIFF(DAY,RentedOn, RentedUntil) AS float) * 2 * (SELECT PriceHalfDay FROM Prices p WHERE p.VehicleType = v.VehicleType AND TimeOfYear = 'Summer')
+	ELSE CAST(DATEDIFF(DAY,RentedOn, RentedUntil) AS float) * 2 * (SELECT PriceHalfDay FROM Prices p WHERE p.VehicleType = v.VehicleType AND TimeOfYear = 'Winter')
+END AS Cost
+FROM Sales s
+JOIN Vehicles v ON v.Id = s.VehicleId
 
 
 --Dohvatiti sve kupce najmova ikad, s tim da se ne ponavljaju u rezultatima
@@ -191,7 +190,7 @@ GROUP BY v.Make
 
 --Arhivirati sve najmove koji su završili u novu tablicu. Osim već postojećih podataka u najmu, arhivirana tablica će sadržavati i podatak koliko je taj najam koštao.
 
-
+SELECT INTO
 
 --Pobrojati koliko je najmova bilo po mjesecu, u svakom mjesecu 2020. godine.
 
