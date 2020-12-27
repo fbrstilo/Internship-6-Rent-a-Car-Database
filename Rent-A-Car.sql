@@ -201,7 +201,12 @@ GROUP BY MONTH(RentedOn)
 
 --Za sva vozila određene vrste, osim informaciju o vozilu, ispisati tekstualnu informaciju treba li registrirati vozilo unutar idućih mjesec dana (‘Treba registraciju’, ‘Ne treba registraciju’)
 
-
+SELECT v.*,
+CASE
+	WHEN DATEDIFF(day, GETDATE(), v.RegisteredUntil)<30 THEN 'Treba registraciju'
+	ELSE 'Ne treba registraciju'
+END AS NeedsRegistering
+FROM Vehicles v WHERE VehicleType = 'Car'
 
 --Dohvatiti broj najmova po vrsti vozila čija duljina najma (razdoblje) prelazi prosječnu duljinu najma
 
